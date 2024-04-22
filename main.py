@@ -1,34 +1,44 @@
-from http import HTTPStatus
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+from services import (
+    get_text, inverse_document_frequency, sort_idf, term_frequency
+)
 
-# Создание объекта приложения.
-lesta_games = FastAPI()
+
+app = FastAPI()
 # Указываем директорию, где хранятся шаблоны
 templates = Jinja2Templates(directory="templates")
 
 
-# Декоратор, определяющий, что GET-запросы к основному URL приложения
-# должны обрабатываться этой функцией.
-@lesta_games.get('/') ________________________________________Response class o model?
-async def get_root(request: Request): ________________________Возвращает что?
-    # Возвращаем шаблон
+@app.get('/', response_class=HTMLResponse)
+async def get_root(request: Request):
+    """Обработчик для начальной страницы."""
     return templates.TemplateResponse(request=request, name="upload.html")
 
 
-@lesta_games.post('/uploadfile')
-async def handle_upload(file: UploadFile = File(...)): ___________фильтрация по файлу
-    try:
-        # Пытаемся декодировать содержимое файла как текст в UTF-8
-        content = await file.read()
-        content.decode()
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST)
-    return content
+@app.post('/uploadfile', response_class=HTMLResponse)
+async def handle_upload(request: Request, file: UploadFile = File()):
+    """Обработчик кнопки 'Submit'."""
+    text = await get_text(file)
+    tf = await term_frequency(text)
+    idf = await inverse_document_frequency(tf)
+    sorted_idf = await sort_idf(idf)
+    return templates.TemplateResponse(
+        request=request,
+        name="result.html",
+        context={
+            "words": sorted_idf,
+            "tf": tf,
+            "idf": sorted_idf
+        }
+    )
 
 
-@lesta_games.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
+@app.exception_handler(HTTPException)
+async def http_exception_handler(
+    request: Request, exc: HTTPException
+) -> HTMLResponse:
+    """Обработчик исключений."""
     return templates.TemplateResponse(request=request, name="400.html")
