@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+    <main class="text-center py-5">
+        <h1>
+            <span style="color: red">Fancy</span>
+            <span style="color: green">File</span>
+            <span style="color: blue">Upload</span>
+        </h1>
+        <br><br>
+        <form action="/uploadfile" method="post" enctype="multipart/form-data">
+            <input name="file" type="file" class="btn btn-primary"><br>
+            <p>Only .txt files are accepted</p>
+            <input type="submit" class="btn btn-success mt-3">
+        </form>
+    </main>
+{% endblock content %}
