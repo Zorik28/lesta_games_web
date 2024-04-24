@@ -19,8 +19,8 @@
 
 ### Project run on local server
 - Install and activate the virtual environment:
-```py -m venv venv```
-```. venv/Scripts/activate```
+```py -m venv venv```  
+```. venv/Scripts/activate```  
 ```python.exe -m pip install --upgrade pip```
 
 - Install dependencies from requirements.txt:
