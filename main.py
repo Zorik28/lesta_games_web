@@ -1,38 +1,46 @@
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse, RedirectResponse
 
+
+from config import db, IDF, templates, TF
 from services import (
-    get_text, inverse_document_frequency, sort_idf, term_frequency
+    get_text, inverse_document_frequency, paginator, term_frequency
 )
 
 
 app = FastAPI()
-# Указываем директорию, где хранятся шаблоны
-templates = Jinja2Templates(directory="templates")
 
 
 @app.get('/', response_class=HTMLResponse)
 async def get_root(request: Request):
     """Обработчик для начальной страницы."""
-    return templates.TemplateResponse(request=request, name="upload.html")
+    return templates.TemplateResponse(request=request, name="index.html")
 
 
-@app.post('/uploadfile', response_class=HTMLResponse)
-async def handle_upload(request: Request, file: UploadFile = File()):
-    """Обработчик кнопки 'Submit'."""
+@app.post('/uploadfile', response_class=RedirectResponse)
+async def handle_upload(file: UploadFile = File()):
+    """Обработчик файла, который клиент загрузил."""
     text = await get_text(file)
     tf = await term_frequency(text)
     idf = await inverse_document_frequency(tf)
-    sorted_idf = await sort_idf(idf)
+    db.append(tf)   # записываем в БД
+    db.append(idf)  # записываем в БД
+    return RedirectResponse(url="/result", status_code=303)
+
+
+@app.get('/result', response_class=HTMLResponse)
+async def get_result(request: Request, page: int = 1, size: int = 10):
+    """Вывод таблицы с отсортированным IDF."""
+    paginated_idf, total_pages = await paginator(page, size, db[IDF])
+    context = {
+        "words": paginated_idf,
+        "tf": db[TF],
+        "page": page,
+        "size": size,
+        "total_pages": total_pages
+    }
     return templates.TemplateResponse(
-        request=request,
-        name="result.html",
-        context={
-            "words": sorted_idf,
-            "tf": tf,
-            "idf": sorted_idf
-        }
+        request=request, name="result.html", context=context
     )
 
 
@@ -41,4 +49,4 @@ async def http_exception_handler(
     request: Request, exc: HTTPException
 ) -> HTMLResponse:
     """Обработчик исключений."""
-    return templates.TemplateResponse(request=request, name="400.html")
+    return templates.TemplateResponse(request=request, name="error.html")

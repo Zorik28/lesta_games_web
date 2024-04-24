@@ -12,15 +12,24 @@
                 </tr>
             </thead>
             <tbody>
-                {% for word in words %}
+                {% for word, idf_value in words %}
                 <tr>
                     <td>{{ word }}</td>
                     <td>{{ tf[word] }}</td>
-                    <td>{{ idf[word] }}</td>
+                    <td>{{ idf_value }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+</div>
+<div class="pagination justify-content-center">
+    {% if page > 1 %}
+    <a href="/result?page={{ page - 1 }}">Previous</a>
+    {% endif %}
+    <span>Page {{ page }}</span>
+    {% if total_pages > page %}
+    <a href="/result?page={{ page + 1 }}">Next</a>
+    {% endif %}
 </div>
 {% endblock content %}

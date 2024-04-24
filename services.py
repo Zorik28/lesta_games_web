@@ -3,6 +3,7 @@ import random
 import re
 from collections import Counter
 from http import HTTPStatus
+from typing import Iterable
 
 from fastapi import UploadFile, HTTPException
 
@@ -38,23 +39,34 @@ async def term_frequency(text: str) -> Counter:
     return word_tf
 
 
-async def inverse_document_frequency(word_tf: Counter) -> dict[str, int]:
-    """Вычисляем обратную частоту документа(IDF)."""
-    word_idf = {}             # Словарь для idf
+async def inverse_document_frequency(words: Counter) -> list[tuple[str, int]]:
+    """Вычисляем обратную частоту документов(IDF)."""
+    dict_idf = {}             # Словарь для idf
     total_docs = 100_000_000  # Для демонстрации количество документов 100млн
-    for word in word_tf:
+    for word in words:
         # docs_with_word - якобы кол-во документов с конкретным словом.
         # Переменная должна содержать запись из БД,
         # к которой прибавляем дополнительное вхождение
         docs_with_word = random.randint(0, 3000) + 1
         idf = math.log10(total_docs/docs_with_word)
-        word_idf[word] = idf  # записываем в словарь idf
-    return word_idf
+        dict_idf[word] = idf  # записываем в словарь idf
+
+    # Сортировка словаря c idf по значениям в обратном порядке
+    sorted_idf = sorted(
+        dict_idf.items(), key=lambda item: item[1], reverse=True
+    )
+    return sorted_idf[:50]  # Возвращаем первые 50 элементов
 
 
-async def sort_idf(word_idf: dict[str, int]) -> dict[str, int]:
-    """Сортировка словаря c idf по значениям в обратном порядке."""
-    sorted_word_idf = sorted(
-        word_idf.items(), key=lambda item: item[1], reverse=True
-    )[:50]
-    return dict(sorted_word_idf)
+async def paginator(
+    page: int, size: int, data: Iterable
+) -> tuple[Iterable, int]:
+    """Постраничный вывод данных."""
+    start = (page - 1) * size
+    end = start + size
+    items = data[start:end]
+    total_pages = math.ceil(len(data) / size)  # округляем до страницы
+    # Проверка на выход за пределы диапазона страниц
+    if page < 1 or page > total_pages:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+    return items, total_pages
