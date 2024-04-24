@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
@@ -25,7 +27,7 @@ async def handle_upload(file: UploadFile = File()):
     idf = await inverse_document_frequency(tf)
     db.append(tf)   # записываем в БД
     db.append(idf)  # записываем в БД
-    return RedirectResponse(url="/result", status_code=303)
+    return RedirectResponse(url="/result", status_code=HTTPStatus.SEE_OTHER)
 
 
 @app.get('/result', response_class=HTMLResponse)
