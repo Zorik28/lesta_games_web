@@ -18,15 +18,17 @@
 
 
 ### Project run on local server
-- Install and activate the virtual environment:
+- Install and activate the virtual environment:  
 ```py -m venv venv```  
-```. venv/Scripts/activate```  
+```. venv/Scripts/activate```
+
+- Upgrade pip:  
 ```python.exe -m pip install --upgrade pip```
 
-- Install dependencies from requirements.txt:
+- Install dependencies from requirements.txt:  
 ```pip install -r requirements.txt```
 
-- Run the application:
+- Run the application:  
 ```uvicorn main:app```
 
 
