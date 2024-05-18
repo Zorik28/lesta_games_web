@@ -17,22 +17,29 @@
 - uvicorn[standard] 0.29.0
 
 
-### Project run on local server
+### Project run on Windows
 - Install and activate the virtual environment:  
-```py -m venv venv```  
-```. venv/Scripts/activate```
+```
+py -m venv venv
+. venv/Scripts/activate
+```
 
 - Upgrade pip:  
-```python.exe -m pip install --upgrade pip```
+```
+python.exe -m pip install --upgrade pip
+```
 
 - Install dependencies from requirements.txt:  
-```pip install -r requirements.txt```
+```
+pip install -r requirements.txt
+```
 
 - Run the application:  
-```uvicorn main:app```
+```
+uvicorn main:app
+```
 
 
 #### Author
-Karapetyan Zorik
-
+Karapetyan Zorik  
 Russian Federation, St. Petersburg, Kupchino.
